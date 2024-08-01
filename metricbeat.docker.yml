@@ -1,0 +1,69 @@
+# metricbeat.modules:
+# # Metrics collected from a Prometheus endpoint
+# - module: prometheus
+#   period: 10s
+#   metricsets: ["collector"]
+#   hosts: ["host.docker.internal:8080/actuator/prometheus"]
+#   metrics_path: /metrics
+
+#   #username: "user"
+#   #password: "secret"
+
+# output.elasticsearch:
+#   hosts: '${ELASTICSEARCH_HOSTS:host.docker.internal:9200}'
+#   username: '${ELASTICSEARCH_USERNAME:elastic}'
+#   password: '${ELASTICSEARCH_PASSWORD:changeme}'
+
+
+
+metricbeat.modules:
+- module: system
+  metricsets:
+    - cpu
+    - load
+    - core
+    - diskio
+    - filesystem
+    - fsstat
+    - memory
+    - network
+    - process
+    - process_summary
+    - socket
+  enabled: true
+  period: 10s
+  processes: ['.*']
+  cgroups: true
+  process.include_top_n:
+    enabled: true
+    by_cpu: 20
+    by_memory: 20
+- module: prometheus
+  period: 10s
+  metricsets: ["collector"]
+  hosts: ["host.docker.internal:8080"]
+  metrics_path: /actuator/prometheus
+
+# name: "{{ inventory_hostname }}"
+
+
+# processors:
+# - add_cloud_metadata: ~
+# - add_host_metadata: ~
+
+
+monitoring.enabled: true
+
+
+output.elasticsearch:
+  hosts: '${ELASTICSEARCH_HOSTS:host.docker.internal:9200}'
+  username: '${ELASTICSEARCH_USERNAME:elastic}'
+  password: '${ELASTICSEARCH_PASSWORD:changeme}'
+
+
+setup:
+  kibana:
+    hosts: '${ELASTICSEARCH_HOSTS:host.docker.internal:9200}'
+    username: '${KIBANA_USERNAME:elastic}'
+    password: '${KIBANA_PASSWORD:changeme}'
+  ilm.overwrite: true

@@ -1,5 +1,3 @@
-version: '3.7'
-
 services:
 
   # The 'setup' service runs a one-off script which initializes users inside
@@ -105,6 +103,32 @@ services:
     depends_on:
       - elasticsearch
     restart: unless-stopped
+
+  apm-server:
+    image: docker.elastic.co/apm/apm-server:8.14.3
+    container_name: apm-server
+    restart: always
+    cap_add: [ "CHOWN", "DAC_OVERRIDE", "SETGID", "SETUID" ]
+    cap_drop: [ "ALL" ]
+    command: >
+      apm-server -e
+        -E apm-server.rum.enabled=true
+        -E setup.apm-server.host=0.0.0.0:8200
+        -E setup.kibana.host=host.docker.internal:5601
+        -E setup.template.settings.index.number_of_replicas=0
+        -E apm-server.kibana.enabled=true
+        -E apm-server.kibana.host=host.docker.internal:5601
+        -E output.elasticsearch.hosts=["host.docker.internal:9200"]
+        -E output.elasticsearch.username=elastic
+        -E output.elasticsearch.password=changeme
+    environment:
+      SERVER_NAME: apm-server
+      ELASTICSEARCH_HOSTS: http://host.docker.internal:9200
+    ports:
+      - "8200:8200"
+    depends_on:
+      - elasticsearch
+      - kibana
 
 networks:
   elk:
