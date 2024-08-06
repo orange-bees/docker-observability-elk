@@ -74,7 +74,7 @@ services:
       - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro,Z
       - ./logstash/pipeline:/usr/share/logstash/pipeline:ro,Z
     ports:
-      - 5044:5044
+      # - 5044:5044
       - 50000:50000/tcp
       - 50000:50000/udp
       - 9600:9600
@@ -116,33 +116,14 @@ services:
     ports:
      - 8200:8200
     volumes:
-      - ./apm-server/config/apm-server.yml:/usr/share/apm-server/apm-server.yml:ro"
-    # command: >
-    #   apm-server -e
-    #     -E apm-server.rum.enabled=true
-    #     -E setup.apm-server.host=0.0.0.0:8200
-    #     -E setup.kibana.host=host.docker.internal:5601
-    #     -E setup.template.settings.index.number_of_replicas=0
-    #     -E apm-server.kibana.enabled=true
-    #     -E apm-server.kibana.host=host.docker.internal:5601
-    #     -E output.elasticsearch.hosts=["host.docker.internal:9200"]
-    #     -E output.elasticsearch.username=elastic
-    #     -E output.elasticsearch.password=changeme
-    # command: >
-    #   apm-server -e
-    #     -E apm-server.rum.enabled=true
-    #     -E setup.apm-server.host=0.0.0.0:8200
-    #     -E setup.kibana.host=host.docker.internal:5601
-    #     -E setup.template.settings.index.number_of_replicas=0
-    #     -E apm-server.kibana.enabled=true
-    #     -E apm-server.kibana.host=host.docker.internal:5601 
+      - ./apm-server/config/apm-server.yml:/usr/share/apm-server/apm-server.yml:ro
     command: >
       apm-server -e
     environment:
       SERVER_NAME: apm-server
       ELASTICSEARCH_HOSTS: http://host.docker.internal:9200
       KIBANA_HOST: http://host.docker.internal:5601
-      ELASTIC_USER: elastic
+      ELASTIC_USER: $ELASTIC_USER
       ELASTIC_PASSWORD: $ELASTIC_PASSWORD
     healthcheck:
       interval: 10s
@@ -151,6 +132,51 @@ services:
     depends_on:
       - elasticsearch
       - kibana
+
+  metricbeat:
+    build:
+      context: metricbeat
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION}
+    restart: unless-stopped
+    ports:
+     - 5066:5066
+    volumes:
+      - ./metricbeat/config/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml:ro
+    environment:
+      ELASTICSEARCH_HOSTS: http://host.docker.internal:9200
+      KIBANA_HOST: http://host.docker.internal:5601
+      ELASTIC_USER: $ELASTIC_USER
+      ELASTIC_PASSWORD: $ELASTIC_PASSWORD
+    command: >
+      metricbeat -e --strict.perms=false
+    depends_on:
+      - elasticsearch
+      - kibana
+
+  filebeat:
+    build:
+      context: filebeat
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION}
+    restart: unless-stopped
+    ports:
+     - 5044:5044
+    volumes:
+      - ./filebeat/config/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - C:/tmp:/var/log/apps:ro
+    environment:
+      ELASTICSEARCH_HOSTS: http://host.docker.internal:9200
+      KIBANA_HOST: http://host.docker.internal:5601
+      ELASTIC_USER: $ELASTIC_USER
+      ELASTIC_PASSWORD: $ELASTIC_PASSWORD
+    command: >
+      filebeat -e --strict.perms=false
+    depends_on:
+      - elasticsearch
+      - kibana
+
+
 
 networks:
   elk:

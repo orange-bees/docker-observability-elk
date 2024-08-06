@@ -1,0 +1,52 @@
+
+metricbeat.modules:
+# System metrics are disabled since we don't want to capture metrics on the Docker container.
+# - module: system
+#   metricsets:
+#     - cpu
+#     - load
+#     - core
+#     - diskio
+#     - filesystem
+#     - fsstat
+#     - memory
+#     - network
+#     - process
+#     - process_summary
+#     - socket
+#   enabled: true
+#   period: 10s
+#   processes: ['.*']
+#   cgroups: true
+#   process.include_top_n:
+#     enabled: true
+#     by_cpu: 20
+#     by_memory: 20
+
+# Metrics collected from a Prometheus endpoint
+- module: prometheus
+  period: 10s
+  metricsets: ["collector"]
+  hosts: ["host.docker.internal:8080"]
+  # Spring Boot Actuator puts Prometheus metrics under its URI instead of /metrics
+  metrics_path: /actuator/prometheus
+
+# processors:
+# - add_cloud_metadata: ~
+# - add_host_metadata: ~
+
+
+monitoring.enabled: true
+
+output.elasticsearch:
+  hosts: ${ELASTICSEARCH_HOSTS:host.docker.internal:9200}
+  username: ${ELASTICSEARCH_USERNAME:elastic}
+  password: ${ELASTICSEARCH_PASSWORD:changeme}
+
+
+setup:
+  kibana:
+    host: ${KIBANA_HOST:host.docker.internal:9200}
+    username: ${KIBANA_USERNAME:elastic}
+    password: ${KIBANA_PASSWORD:changeme}
+  ilm.overwrite: true

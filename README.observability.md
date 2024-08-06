@@ -25,13 +25,16 @@ setup -E setup.kibana.host=host.docker.internal:5601 \
 ```
 
 ```shell
-docker container run \
--p 5066:5066 \
+docker container run --rm \
 docker.elastic.co/beats/metricbeat:8.14.3 \
 setup -E setup.kibana.host=host.docker.internal:5601 \
 -E output.elasticsearch.hosts=["host.docker.internal:9200"] \
 -E output.elasticsearch.username=elastic \
 -E output.elasticsearch.password=changeme
+```
+#### Windows Dashboard Setup
+```shell
+docker container run --rm docker.elastic.co/beats/metricbeat:8.14.3 setup -E setup.kibana.host=host.docker.internal:5601 -E output.elasticsearch.hosts=["host.docker.internal:9200"] -E output.elasticsearch.username=elastic -E output.elasticsearch.password=changeme
 ```
 
 ```shell
@@ -53,3 +56,17 @@ metricbeat -e
 ```
 
 ## Filebeat
+
+```shell
+docker container run --rm \
+docker.elastic.co/beats/filebeat:8.14.3 \
+setup -E setup.kibana.host=host.docker.internal:5601 \
+-E output.elasticsearch.hosts=["host.docker.internal:9200"] \
+-E output.elasticsearch.username=elastic \
+-E output.elasticsearch.password=changeme
+```
+
+#### Windows Dashboard Setup
+```shell
+docker container run --rm docker.elastic.co/beats/filebeat:8.14.3 setup -E setup.kibana.host=host.docker.internal:5601 -E output.elasticsearch.hosts=["host.docker.internal:9200"] -E output.elasticsearch.username=elastic -E output.elasticsearch.password=changeme
+```

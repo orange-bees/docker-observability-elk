@@ -1,0 +1,60 @@
+filebeat.config:
+  modules:
+    path: ${path.config}/modules.d/*.yml
+    reload.enabled: true
+
+# filebeat.autodiscover:
+#   providers:
+#     - type: docker
+#       hints.enabled: true
+
+# processors:
+# - add_cloud_metadata: ~
+
+# output.elasticsearch:
+#   hosts: '${ELASTICSEARCH_HOSTS:elasticsearch:9200}'
+#   username: '${ELASTICSEARCH_USERNAME:}'
+#   password: '${ELASTICSEARCH_PASSWORD:}'
+
+# filebeat.modules:
+# - module: auditd
+# # - module: nginx
+# - module: system
+
+
+filebeat.inputs:
+- type: log
+  paths: /var/log/apps/app-spring-boot-reactive-demo.json
+  json.keys_under_root: true
+  json.overwrite_keys: true
+  json.add_error_key: true
+  json.expand_keys: true
+
+
+name: "Omen"
+
+
+processors:
+# - add_cloud_metadata: ~
+- add_host_metadata: ~
+
+
+monitoring.enabled: true
+
+
+output:
+  console:
+    pretty: true
+    enabled: false
+  elasticsearch:
+    hosts: '${ELASTICSEARCH_HOSTS:host.docker.internal:9200}'
+    username: '${ELASTICSEARCH_USERNAME:elastic}'
+    password: '${ELASTICSEARCH_PASSWORD:changeme}'
+
+
+setup:
+  kibana:
+    host: '${KIBANA_HOST:host.docker.internal:5601}'
+    username: '${ELASTICSEARCH_USERNAME:elastic}'
+    password: '${ELASTICSEARCH_PASSWORD:changeme}'
+  ilm.overwrite: true
