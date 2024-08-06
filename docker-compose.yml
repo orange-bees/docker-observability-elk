@@ -164,6 +164,7 @@ services:
      - 5044:5044
     volumes:
       - ./filebeat/config/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      # This should be pointed to the location where the files are located.
       - C:/tmp:/var/log/apps:ro
     environment:
       ELASTICSEARCH_HOSTS: http://host.docker.internal:9200
